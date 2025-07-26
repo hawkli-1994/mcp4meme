@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  mcp4meme:
+    build: .
+    container_name: mcp4meme
+    # STDIO mode - for process communication
+    stdin_open: true
+    tty: true
+    # Uncomment below for HTTP mode
+    # ports:
+    #   - "8000:8000"
+    # command: python mcp_server.py --http
+    
+  # Alternative HTTP service
+  mcp4meme-http:
+    build: .
+    container_name: mcp4meme-http
+    ports:
+      - "8000:8000"
+    command: python mcp_server.py --http
+    profiles:
+      - http
