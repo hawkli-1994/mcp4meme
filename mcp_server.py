@@ -67,17 +67,28 @@ bitquery = BitqueryClient()
 
 @mcp.tool
 async def get_trending_tokens(
-    limit: int = 10,
+    limit: int = 20,
     ctx: Context = None,
 ) -> Dict[str, Any]:
     """
-    Get trending tokens on Four.meme platform
+    Fetch trending tokens on the Four.meme platform, tailored for meme traders seeking hot, volatile tokens.
+
+    This function queries the BSC network via Bitquery to retrieve tokens with the highest trade activity over the last 24 hours. Stablecoins (e.g., USDT, USDC, BUSD, DAI) are filtered out to focus on speculative, high-interest tokens that meme traders crave.
 
     Args:
-        limit: Number of tokens to return
+        limit (int): The number of top trending tokens to return (default is 20).
 
     Returns:
-        List of trending tokens with their statistics
+        dict: A dictionary containing:
+            - trending_tokens (list): A list of dictionaries, each representing a token with:
+                - rank (int): The token's ranking based on trade count.
+                - token_address (str): The smart contract address of the token.
+                - symbol (str): The token's symbol.
+                - name (str): The token's name.
+                - trade_count (int): The number of trades in the last 24 hours.
+                - volume_24hr_usd (str): The total trading volume in USD over the last 24 hours.
+            - total_found (int): The total number of trending tokens found.
+            - error (str, optional): An error message if the query fails.
     """
     query = """
     query GetTrendingTokens($limit: Int!, $time_24hr_ago: DateTime) {
@@ -149,6 +160,16 @@ async def get_trending_tokens(
             token_info = trade.get("Trade", {}).get("Currency", {})
             trade_count = trade.get("trades_24hr", 0)
             volume_24hr = trade.get("volume_24hr", 0)
+            # if symbol in USDT, USDC, BUSD, DAI, BNB, USD1, continue
+            if token_info.get("Symbol", "").upper() in [
+                "USDT",
+                "USDC",
+                "BUSD",
+                "DAI",
+                "BNB",
+                "USD1",
+            ]:
+                continue
 
             trending_tokens.append(
                 {
